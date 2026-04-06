@@ -15,6 +15,10 @@ from services.orion_service import OrionService
 from services.provider_service import ProviderService
 from services.subscription_service import SubscriptionService
 from services.notification_service import NotificationService
+from routes.products import products_bp
+from routes.stores import stores_bp
+from routes.employees import employees_bp
+from routes.inventory import inventory_bp
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -180,6 +184,14 @@ def create_app(config=None):
     def handle_disconnect():
         """Socket.IO disconnection handler"""
         logger.info("Client disconnected from Socket.IO")
+    
+    # Register API Blueprints
+    logger.info("Registering API Blueprints...")
+    app.register_blueprint(products_bp)
+    app.register_blueprint(stores_bp)
+    app.register_blueprint(employees_bp)
+    app.register_blueprint(inventory_bp)
+    logger.info("API Blueprints registered successfully")
     
     return app, socketio
 
