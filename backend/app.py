@@ -47,10 +47,10 @@ def create_app(config=None):
     
     logger.info(f"Flask app initialized with config: {config.__class__.__name__}")
     
-    # Initialize services
+    # Initialize services with Orion URL for HTTP calls
     orion_service = OrionService(config.ORION_URL)
     provider_service = ProviderService()
-    subscription_service = SubscriptionService()
+    subscription_service = SubscriptionService(config.ORION_URL)  # Pass Orion URL
     notification_service = NotificationService(socketio)
     
     # Store services in app context for later use

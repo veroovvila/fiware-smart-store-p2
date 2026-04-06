@@ -18,18 +18,41 @@ logger = logging.getLogger(__name__)
 class OrionDataImporter:
     """Handles importing data into Orion Context Broker"""
     
-    def __init__(self, orion_url: str, import_path: str = '/app/import-data'):
+    def __init__(self, orion_url: str, import_path: str = None):
         """
         Initialize importer
         
         Args:
             orion_url: Base URL of Orion (e.g., http://localhost:1026)
-            import_path: Path to JSON import files
+            import_path: Path to JSON import files. If None, tries common locations
         """
         self.orion_url = orion_url
         self.api_url = f"{orion_url}/v2"
-        self.import_path = import_path
-        self.headers = {
+        
+        # Determine import path (try multiple locations)
+        if import_path is None:
+            # Try Docker path first
+            if os.path.exists('/app/import-data'):
+                import_path = '/app/import-data'
+            # Try relative to this file
+            elif os.path.exists(os.path.join(os.path.dirname(__file__), '../import-data')):
+                import_path = os.path.join(os.path.dirname(__file__), '../import-data')
+            # Try current working directory
+            elif os.path.exists('./import-data'):
+                import_path = './import-data'
+            # Try parent directory
+            elif os.path.exists('../import-data'):
+                import_path = '../import-data'
+            else:
+                logger.warning("Could not find import-data directory in standard locations")
+                import_path = '/app/import-data'  # Default fallback
+        
+        self.import_path = os.path.abspath(import_path)
+        logger.info(f"Import data path set to: {self.import_path}")
+        
+        # Headers for different HTTP methods
+        self.get_headers = {'Accept': 'application/json'}
+        self.post_headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
@@ -41,7 +64,7 @@ class OrionDataImporter:
         try:
             response = requests.get(
                 f"{self.api_url}/entities/{entity_id}",
-                headers=self.headers,
+                headers=self.get_headers,
                 timeout=5
             )
             return response.status_code == 200
@@ -63,7 +86,7 @@ class OrionDataImporter:
             response = requests.post(
                 f"{self.api_url}/entities",
                 json=entity,
-                headers=self.headers,
+                headers=self.post_headers,
                 timeout=10
             )
             
@@ -72,7 +95,7 @@ class OrionDataImporter:
                 self.entities_created += 1
                 return True
             else:
-                logger.error(f"✗ Failed to create {entity['id']}: HTTP {response.status_code}")
+                logger.error(f"✗ Failed to create {entity['id']}: HTTP {response.status_code} - {response.text}")
                 return False
                 
         except Exception as e:
@@ -191,14 +214,14 @@ class OrionDataImporter:
             {
                 'description': 'Price change notification',
                 'subject': {
-                    'entities': [{'type': 'Product'}],
+                    'entities': [{'idPattern': '.*', 'type': 'Product'}],
                     'condition': {
                         'attrs': ['price']
                     }
                 },
                 'notification': {
                     'http': {
-                        'url': f'http://backend:5000/notifications'
+                        'url': 'http://backend:5000/notifications'
                     },
                     'attrs': ['price', 'name', 'id']
                 }
@@ -206,7 +229,7 @@ class OrionDataImporter:
             {
                 'description': 'Low stock notification',
                 'subject': {
-                    'entities': [{'type': 'InventoryItem'}],
+                    'entities': [{'idPattern': '.*', 'type': 'InventoryItem'}],
                     'condition': {
                         'attrs': ['quantity'],
                         'expression': {'q': 'quantity<10'}
@@ -214,7 +237,7 @@ class OrionDataImporter:
                 },
                 'notification': {
                     'http': {
-                        'url': f'http://backend:5000/notifications'
+                        'url': 'http://backend:5000/notifications'
                     },
                     'attrs': ['quantity', 'productId', 'storeId']
                 }
