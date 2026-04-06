@@ -27,8 +27,27 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Dashboard Section -->
+            <!-- Products Section -->
             <section id="dashboard" class="section">
+                <div class="container">
+                    <h2>📊 Productos Disponibles</h2>
+                    <div class="filters">
+                        <input type="text" id="search-products" placeholder="Buscar por nombre...">
+                        <div class="price-filter">
+                            <label>Precio mínimo:</label>
+                            <input type="number" id="price-min" placeholder="0" min="0" step="0.01">
+                            <label>Precio máximo:</label>
+                            <input type="number" id="price-max" placeholder="1000" min="0" step="0.01">
+                        </div>
+                    </div>
+                    <div id="stores-list" class="stores-grid">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-stats" class="section" style="display:none;">
                 <div class="container">
                     <h2>Dashboard</h2>
                     <div class="dashboard-grid">
@@ -125,12 +144,23 @@
     <!-- Three.js for 3D visualization (optional) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <!-- Application scripts -->
-    <script src="js/app.js"></script>
+    <!-- Application Configuration (must be first) -->
+    <script src="js/config.js"></script>
+    
+    <!-- API Layer -->
     <script src="js/api.js"></script>
-    <script src="js/map.js"></script>
+    
+    <!-- UI Components -->
     <script src="js/ui.js"></script>
+    
+    <!-- Event Handlers -->
+    <script src="js/events.js"></script>
+    
+    <!-- Real-time Notifications -->
     <script src="js/notifications.js"></script>
+    
+    <!-- Main Application (must be last) -->
+    <script src="js/app.js"></script>
 
 </body>
 </html>
