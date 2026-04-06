@@ -5,11 +5,16 @@ Main application initialization and configuration
 
 import logging
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from config import get_config
+from data.import_data import OrionDataImporter
+from services.orion_service import OrionService
+from services.provider_service import ProviderService
+from services.subscription_service import SubscriptionService
+from services.notification_service import NotificationService
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -24,7 +29,7 @@ def create_app(config=None):
         config: Configuration object or environment string
         
     Returns:
-        Flask application instance
+        Tuple of (Flask app, SocketIO instance)
     """
     app = Flask(__name__)
     
@@ -42,13 +47,30 @@ def create_app(config=None):
     
     logger.info(f"Flask app initialized with config: {config.__class__.__name__}")
     
-    # Register Blueprint placeholder for future routes
-    # These will be populated in Phase 3+
-    # from routes import products_bp, stores_bp, inventory_bp, employees_bp
-    # app.register_blueprint(products_bp, url_prefix=f'{config.API_PREFIX}/products')
-    # app.register_blueprint(stores_bp, url_prefix=f'{config.API_PREFIX}/stores')
-    # app.register_blueprint(inventory_bp, url_prefix=f'{config.API_PREFIX}/inventory')
-    # app.register_blueprint(employees_bp, url_prefix=f'{config.API_PREFIX}/employees')
+    # Initialize services
+    orion_service = OrionService(config.ORION_URL)
+    provider_service = ProviderService()
+    subscription_service = SubscriptionService()
+    notification_service = NotificationService(socketio)
+    
+    # Store services in app context for later use
+    app.orion_service = orion_service
+    app.provider_service = provider_service
+    app.subscription_service = subscription_service
+    app.notification_service = notification_service
+    
+    # Run data import on startup
+    with app.app_context():
+        try:
+            health = orion_service.health_check()
+            if health.get('status') == 'healthy':
+                logger.info("Orion is healthy, starting data import...")
+                importer = OrionDataImporter(config.ORION_URL)
+                importer.run(provider_service, subscription_service)
+            else:
+                logger.warning(f"Orion is not healthy: {health}")
+        except Exception as e:
+            logger.error(f"Error during data import: {str(e)}")
     
     # Health check endpoint
     @app.route('/health', methods=['GET'])
@@ -81,17 +103,83 @@ def create_app(config=None):
             'orion_url': app.config['ORION_URL']
         }), 200
     
+    # Notifications endpoint - receives notifications from Orion
+    @app.route('/notifications', methods=['POST'])
+    def receive_notifications():
+        """
+        Receive notifications from Orion Context Broker
+        Broadcasts via Socket.IO to connected clients
+        
+        Returns:
+            JSON response acknowledging receipt
+        """
+        try:
+            data = request.get_json() or {}
+            
+            logger.info(f"Received notification from Orion: {data.get('subscriptionId')}")
+            
+            # Extract relevant data
+            subscription_id = data.get('subscriptionId')
+            notification_type = 'unknown'
+            
+            # Determine notification type based on data
+            if 'data' in data and isinstance(data['data'], list):
+                for entity in data['data']:
+                    entity_type = entity.get('type', '')
+                    
+                    # Price change notification
+                    if 'price' in entity and entity_type == 'Product':
+                        notification_type = 'price_change'
+                        app.notification_service.notify_price_change(
+                            entity.get('id'),
+                            entity.get('price', {}).get('value'),
+                            entity.get('price', {}).get('metadata', {}).get('oldValue')
+                        )
+                    
+                    # Low stock notification
+                    elif 'quantity' in entity and entity_type == 'InventoryItem':
+                        quantity = entity.get('quantity', {}).get('value')
+                        if quantity is not None and quantity < 10:
+                            notification_type = 'low_stock'
+                            app.notification_service.notify_low_stock(
+                                entity.get('productId', {}).get('value'),
+                                quantity,
+                                10
+                            )
+                    
+                    # Generic broadcast
+                    app.notification_service.broadcast('entity_update', {
+                        'subscription_id': subscription_id,
+                        'entity_id': entity.get('id'),
+                        'entity_type': entity_type,
+                        'notification_type': notification_type,
+                        'data': entity
+                    })
+            
+            return jsonify({
+                'success': True,
+                'message': 'Notification received',
+                'subscription_id': subscription_id
+            }), 200
+            
+        except Exception as e:
+            logger.error(f"Error processing notification: {str(e)}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 400
+    
     # Socket.IO event handlers
     @socketio.on('connect')
     def handle_connect():
         """Socket.IO connection handler"""
-        logger.info("Client connected")
+        logger.info("Client connected via Socket.IO")
         return True
     
     @socketio.on('disconnect')
     def handle_disconnect():
         """Socket.IO disconnection handler"""
-        logger.info("Client disconnected")
+        logger.info("Client disconnected from Socket.IO")
     
     return app, socketio
 

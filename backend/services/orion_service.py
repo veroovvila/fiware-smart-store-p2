@@ -43,9 +43,11 @@ class OrionService:
             Dictionary with health status information
         """
         try:
+            # GET requests should not include Content-Type header
+            get_headers = {'Accept': 'application/json'}
             response = requests.get(
                 f"{self.base_url}/version",
-                headers=self.headers,
+                headers=get_headers,
                 timeout=5
             )
             if response.status_code == 200:
@@ -94,13 +96,26 @@ class OrionService:
         
         try:
             logger.info(f"Creating entity: {entity.get('id')}")
-            # Phase 2: Just return mock response
-            # Real HTTP call will be in Phase 3
-            return {
-                'success': True,
-                'entity_id': entity.get('id'),
-                'message': 'Entity created successfully'
-            }
+            response = requests.post(
+                f"{self.api_url}/entities",
+                json=entity,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code in [201, 204]:
+                logger.info(f"✓ Entity created: {entity.get('id')}")
+                return {
+                    'success': True,
+                    'entity_id': entity.get('id'),
+                    'message': 'Entity created successfully'
+                }
+            else:
+                logger.error(f"✗ Failed to create entity: HTTP {response.status_code}")
+                return {
+                    'success': False,
+                    'error': f"HTTP {response.status_code}: {response.text}"
+                }
         except Exception as e:
             logger.error(f"Error creating entity: {str(e)}")
             return {
@@ -127,13 +142,27 @@ class OrionService:
         
         try:
             logger.info(f"Retrieving entity: {entity_id}")
-            # Phase 2: Mock response
-            # Real HTTP GET will be in Phase 3
-            return {
-                'success': True,
-                'entity_id': entity_id,
-                'message': 'Entity retrieved successfully'
-            }
+            # GET requests should not include Content-Type header
+            get_headers = {'Accept': 'application/json'}
+            response = requests.get(
+                f"{self.api_url}/entities/{entity_id}",
+                headers=get_headers,
+                timeout=5
+            )
+            
+            if response.status_code == 200:
+                logger.info(f"✓ Entity retrieved: {entity_id}")
+                return {
+                    'success': True,
+                    'entity': response.json(),
+                    'message': 'Entity retrieved successfully'
+                }
+            else:
+                logger.error(f"✗ Failed to retrieve entity: HTTP {response.status_code}")
+                return {
+                    'success': False,
+                    'error': f"HTTP {response.status_code}"
+                }
         except Exception as e:
             logger.error(f"Error retrieving entity: {str(e)}")
             return {
@@ -161,14 +190,27 @@ class OrionService:
         
         try:
             logger.info(f"Updating entity: {entity_id}")
-            # Phase 2: Mock response
-            # Real HTTP PATCH will be in Phase 3
-            return {
-                'success': True,
-                'entity_id': entity_id,
-                'updates': updates,
-                'message': 'Entity updated successfully'
-            }
+            response = requests.patch(
+                f"{self.api_url}/entities/{entity_id}/attrs",
+                json=updates,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code in [204, 200]:
+                logger.info(f"✓ Entity updated: {entity_id}")
+                return {
+                    'success': True,
+                    'entity_id': entity_id,
+                    'updates': updates,
+                    'message': 'Entity updated successfully'
+                }
+            else:
+                logger.error(f"✗ Failed to update entity: HTTP {response.status_code}")
+                return {
+                    'success': False,
+                    'error': f"HTTP {response.status_code}"
+                }
         except Exception as e:
             logger.error(f"Error updating entity: {str(e)}")
             return {
@@ -195,13 +237,27 @@ class OrionService:
         
         try:
             logger.info(f"Deleting entity: {entity_id}")
-            # Phase 2: Mock response
-            # Real HTTP DELETE will be in Phase 3
-            return {
-                'success': True,
-                'entity_id': entity_id,
-                'message': 'Entity deleted successfully'
-            }
+            # DELETE requests should not include Content-Type header
+            delete_headers = {'Accept': 'application/json'}
+            response = requests.delete(
+                f"{self.api_url}/entities/{entity_id}",
+                headers=delete_headers,
+                timeout=10
+            )
+            
+            if response.status_code in [204, 200]:
+                logger.info(f"✓ Entity deleted: {entity_id}")
+                return {
+                    'success': True,
+                    'entity_id': entity_id,
+                    'message': 'Entity deleted successfully'
+                }
+            else:
+                logger.error(f"✗ Failed to delete entity: HTTP {response.status_code}")
+                return {
+                    'success': False,
+                    'error': f"HTTP {response.status_code}"
+                }
         except Exception as e:
             logger.error(f"Error deleting entity: {str(e)}")
             return {
@@ -222,20 +278,45 @@ class OrionService:
         """
         try:
             logger.info(f"Listing entities (type: {entity_type}, limit: {limit})")
-            # Phase 2: Mock response
-            # Real HTTP GET with query params will be in Phase 3
-            return {
-                'success': True,
-                'entity_type': entity_type,
-                'limit': limit,
-                'entities': [],
-                'count': 0,
-                'message': 'Entities retrieved successfully'
-            }
+            
+            params = {'limit': limit}
+            if entity_type:
+                params['type'] = entity_type
+            
+            # GET requests should not include Content-Type header
+            get_headers = {'Accept': 'application/json'}
+            response = requests.get(
+                f"{self.api_url}/entities",
+                params=params,
+                headers=get_headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                entities = response.json()
+                logger.info(f"✓ Retrieved {len(entities)} entities")
+                return {
+                    'success': True,
+                    'entity_type': entity_type,
+                    'limit': limit,
+                    'entities': entities,
+                    'count': len(entities),
+                    'message': 'Entities retrieved successfully'
+                }
+            else:
+                logger.error(f"✗ Failed to list entities: HTTP {response.status_code}")
+                return {
+                    'success': False,
+                    'error': f"HTTP {response.status_code}",
+                    'entities': [],
+                    'count': 0
+                }
         except Exception as e:
             logger.error(f"Error listing entities: {str(e)}")
             return {
                 'success': False,
-                'error': str(e)
+                'error': str(e),
+                'entities': [],
+                'count': 0
             }
 
