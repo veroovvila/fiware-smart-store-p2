@@ -1,0 +1,35 @@
+# Backend dependencies
+# Flask and FIWARE integration
+
+# Core Framework
+Flask==2.3.3
+Flask-SocketIO==5.3.4
+Flask-CORS==4.0.0
+
+# Server
+python-socketio==5.9.0
+python-engineio==4.7.1
+Werkzeug==2.3.7
+
+# Database
+pymongo==4.5.0
+
+# HTTP Requests
+requests==2.31.0
+
+# Task Scheduling
+APScheduler==3.10.4
+
+# Utilities
+python-dotenv==1.0.0
+python-dateutil==2.8.2
+
+# Validation
+email-validator==2.0.0
+
+# Security & Hashing
+bcrypt==4.0.1
+PyJWT==2.8.1
+
+# Development
+python-debugger==2.0 (optional)
