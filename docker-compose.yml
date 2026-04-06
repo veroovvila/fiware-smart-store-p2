@@ -33,12 +33,7 @@ services:
       DB_HOST: mongodb
       DB_USERNAME: ${MONGO_ROOT_USER:-root}
       DB_PASSWORD: ${MONGO_ROOT_PASSWORD:-root}
-      DB_REPLICA_SET: rs0
-    command:
-      - -dbhost
-      - mongodb
-      - -rplSet
-      - rs0
+    command: "-dbURI mongodb://root:root@mongodb:27017/fiware_smartstore?authSource=admin"    
     networks:
       - fiware
     healthcheck:
