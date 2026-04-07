@@ -15,20 +15,103 @@ const App = {
    * Initialize the application
    */
   async init() {
-    console.log('Initializing FIWARE Smart Store Frontend...');
+    console.log('=== INITIALIZING FIWARE SMART STORE ===');
 
     try {
       // Initialize modules
+      console.log('[App] Initializing Theme...');
+      if (!Theme) {
+        console.error('[App] Theme module not loaded!');
+        return;
+      }
+      Theme.init();
+
+      console.log('[App] Initializing I18N...');
+      if (!I18N) {
+        console.error('[App] I18N module not loaded!');
+        return;
+      }
+      I18N.init();
+
+      console.log('[App] Initializing Events...');
       Events.init();
+      
+      console.log('[App] Initializing Notifications...');
       Notifications.init();
+
+      // Setup controls
+      console.log('[App] Setting up controls...');
+      this.setupControls();
 
       // Show initial section (dashboard)
       this.navigateToDashboard();
 
-      console.log('Application initialized successfully');
+      console.log('=== APPLICATION READY ===');
     } catch (error) {
-      console.error('Application initialization error:', error);
-      UI.showError('app', 'Error al inicializar la aplicación');
+      console.error('=== INITIALIZATION ERROR ===', error);
+      console.error('Stack:', error.stack);
+    }
+  },
+
+  /**
+   * Setup theme toggle and language selector
+   */
+  setupControls() {
+    // Theme toggle button
+    const themeBtn = document.getElementById('theme-toggle');
+    console.log('[App] Theme button:', themeBtn ? 'FOUND' : 'NOT FOUND');
+    
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        console.log('[App] Theme button clicked');
+        Theme.toggle();
+        this.updateThemeButton();
+      });
+      this.updateThemeButton();
+    }
+
+    // Language selector
+    const langSelect = document.getElementById('language-select');
+    console.log('[App] Language selector:', langSelect ? 'FOUND' : 'NOT FOUND');
+    
+    if (langSelect) {
+      langSelect.value = I18N.getCurrentLanguage();
+      langSelect.addEventListener('change', (e) => {
+        console.log('[App] Language changed to:', e.target.value);
+        I18N.setLanguage(e.target.value);
+      });
+    }
+  },
+
+  /**
+   * Update theme button display
+   */
+  updateThemeButton() {
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+      const theme = Theme.getCurrentTheme();
+      themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+      console.log('[App] Theme button updated to:', themeBtn.textContent);
+    }
+  },
+
+  /**
+   * Reload current section (useful when language changes)
+   */
+  async reloadCurrentSection() {
+    const activeSection = document.querySelector('.section[style="display: block"]');
+    if (activeSection) {
+      const sectionId = activeSection.id;
+      
+      if (sectionId === 'dashboard') {
+        await this.loadDashboard();
+      } else if (sectionId === 'inventory') {
+        await this.loadInventory();
+      } else if (sectionId === 'stores') {
+        await this.loadStores();
+      } else if (sectionId === 'employees') {
+        await this.loadEmployees();
+      }
     }
   },
 
@@ -44,7 +127,7 @@ const App = {
    */
   async loadDashboard() {
     try {
-      UI.showLoading('');
+      UI.showLoading('products-list');
       
       // Fetch counts for statistics
       const productsRes = await API.getProducts(1, 1);
@@ -60,9 +143,12 @@ const App = {
       };
 
       UI.updateStats(stats);
+      
+      // Also load and display products in the dashboard
+      await this.loadProducts();
     } catch (error) {
       console.error('Dashboard load error:', error);
-      UI.showError('dashboard', 'Error al cargar el dashboard');
+      UI.showError('products-list', 'Error al cargar el dashboard');
     }
   },
 
@@ -71,7 +157,7 @@ const App = {
    */
   async loadProducts() {
     try {
-      UI.showLoading('stores-list');
+      UI.showLoading('products-list');
 
       // Get filter values
       const searchInput = document.getElementById('search-products');
@@ -92,14 +178,14 @@ const App = {
       );
 
       if (response.success && response.data) {
-        this.products = response.data.items || [];
+        this.products = response.data.products || [];
         UI.renderProducts(this.products, response.data);
       } else {
         UI.showError('stores-list', 'No se pudieron cargar los productos');
       }
     } catch (error) {
       console.error('Products load error:', error);
-      UI.showError('stores-list', 'Error al cargar productos: ' + error.message);
+      UI.showError('products-list', 'Error al cargar productos: ' + error.message);
     }
   },
 
@@ -111,10 +197,7 @@ const App = {
       UI.showLoading('inventory-table');
 
       // Get filter values
-      const searchInput = document.getElementById('search-inventory');
       const storeFilter = document.getElementById('filter-store');
-
-      const productName = searchInput ? searchInput.value : '';
       const storeId = storeFilter ? storeFilter.value : '';
 
       // Fetch inventory
@@ -122,7 +205,7 @@ const App = {
         this.currentPage,
         CONFIG.UI.ITEMS_PER_PAGE,
         false,
-        productName,
+        '',  // productId (empty string)
         storeId
       );
 
@@ -151,7 +234,7 @@ const App = {
       const response = await API.getStores(this.currentPage, CONFIG.UI.ITEMS_PER_PAGE);
 
       if (response.success && response.data) {
-        this.stores = response.data.items || [];
+        this.stores = response.data.stores || [];
         UI.renderStores(this.stores);
       } else {
         UI.showError('stores-list', 'No se pudieron cargar las tiendas');
@@ -172,7 +255,7 @@ const App = {
       const response = await API.getEmployees(this.currentPage, CONFIG.UI.ITEMS_PER_PAGE);
 
       if (response.success && response.data) {
-        this.employees = response.data.items || [];
+        this.employees = response.data.employees || [];
         UI.renderEmployees(this.employees);
       } else {
         UI.showError('employees-list', 'No se pudieron cargar los empleados');

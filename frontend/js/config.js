@@ -6,7 +6,7 @@
 const CONFIG = {
   // Backend API Configuration
   API: {
-    BASE_URL: 'http://localhost:5000',
+    BASE_URL: '',  // Use relative URLs - Nginx will proxy to backend
     VERSION: 'v1',
     ENDPOINTS: {
       PRODUCTS: '/api/v1/products',
@@ -18,7 +18,7 @@ const CONFIG = {
 
   // Socket.IO Configuration
   SOCKET: {
-    URL: 'http://localhost:5000',
+    URL: window.location.origin,  // Use current host
     RECONNECT_DELAY: 3000,
     EVENTS: {
       PRICE_CHANGE: 'price_change',

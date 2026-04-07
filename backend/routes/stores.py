@@ -33,10 +33,13 @@ def list_stores():
         orion = get_orion_service()
         result = orion.list_entities(entity_type='Store', limit=1000)
         
+        # If query fails, return empty list instead of error
         if not result.get('success'):
-            return jsonify(format_error_response("Failed to fetch stores")), 400
+            logger.warning(f"Failed to query Orion: {result.get('error')}")
+            stores = []
+        else:
+            stores = result.get('entities', [])
         
-        stores = result.get('entities', [])
         paginated = paginate_results(stores, page, limit)
         
         return jsonify(format_success_response(

@@ -17,11 +17,18 @@
                     <h1>Smart Store</h1>
                 </div>
                 <ul class="navbar-menu">
-                    <li><a href="#dashboard" class="nav-link">Dashboard</a></li>
-                    <li><a href="#stores" class="nav-link">Tiendas</a></li>
-                    <li><a href="#inventory" class="nav-link">Inventario</a></li>
-                    <li><a href="#employees" class="nav-link">Empleados</a></li>
+                    <li><a href="#dashboard" class="nav-link" data-i18n="dashboard">Dashboard</a></li>
+                    <li><a href="#stores" class="nav-link" data-i18n="stores">Tiendas</a></li>
+                    <li><a href="#inventory" class="nav-link" data-i18n="inventory">Inventario</a></li>
+                    <li><a href="#employees" class="nav-link" data-i18n="employees">Empleados</a></li>
                 </ul>
+                <div class="navbar-controls">
+                    <button id="theme-toggle" class="control-btn" title="Toggle Dark/Light Mode">🌙</button>
+                    <select id="language-select" class="language-select">
+                        <option value="es">Español</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
             </div>
         </nav>
 
@@ -30,17 +37,17 @@
             <!-- Products Section -->
             <section id="dashboard" class="section">
                 <div class="container">
-                    <h2>📊 Productos Disponibles</h2>
+                    <h2 data-i18n="availableProducts">📊 Productos Disponibles</h2>
                     <div class="filters">
-                        <input type="text" id="search-products" placeholder="Buscar por nombre...">
+                        <input type="text" id="search-products" placeholder="Buscar por nombre..." data-i18n="searchByName">
                         <div class="price-filter">
-                            <label>Precio mínimo:</label>
+                            <label data-i18n="minPrice">Precio mínimo:</label>
                             <input type="number" id="price-min" placeholder="0" min="0" step="0.01">
-                            <label>Precio máximo:</label>
+                            <label data-i18n="maxPrice">Precio máximo:</label>
                             <input type="number" id="price-max" placeholder="1000" min="0" step="0.01">
                         </div>
                     </div>
-                    <div id="stores-list" class="stores-grid">
+                    <div id="products-list" class="stores-grid">
                         <!-- Products will be loaded here -->
                     </div>
                 </div>
@@ -49,22 +56,22 @@
             <!-- Dashboard Section -->
             <section id="dashboard-stats" class="section" style="display:none;">
                 <div class="container">
-                    <h2>Dashboard</h2>
+                    <h2 data-i18n="dashboardTitle">Dashboard</h2>
                     <div class="dashboard-grid">
                         <div class="card stats-card">
-                            <h3>Tiendas Activas</h3>
+                            <h3 data-i18n="activeStores">Tiendas Activas</h3>
                             <p class="stat-value" id="store-count">0</p>
                         </div>
                         <div class="card stats-card">
-                            <h3>Productos</h3>
+                            <h3 data-i18n="products">Productos</h3>
                             <p class="stat-value" id="product-count">0</p>
                         </div>
                         <div class="card stats-card">
-                            <h3>Inventario Total</h3>
+                            <h3 data-i18n="totalInventory">Inventario Total</h3>
                             <p class="stat-value" id="inventory-count">0</p>
                         </div>
                         <div class="card stats-card">
-                            <h3>Empleados</h3>
+                            <h3 data-i18n="employees">Empleados</h3>
                             <p class="stat-value" id="employee-count">0</p>
                         </div>
                     </div>
@@ -74,7 +81,7 @@
             <!-- Map Section -->
             <section id="map-section" class="section">
                 <div class="container">
-                    <h2>Ubicación de Tiendas</h2>
+                    <h2 data-i18n="storeLocations">Ubicación de Tiendas</h2>
                     <div id="map" class="map-container"></div>
                 </div>
             </section>
@@ -82,7 +89,7 @@
             <!-- Stores Section -->
             <section id="stores" class="section">
                 <div class="container">
-                    <h2>Gestión de Tiendas</h2>
+                    <h2 data-i18n="storeManagement">Gestión de Tiendas</h2>
                     <div id="stores-list" class="stores-grid">
                         <!-- Stores data will be loaded here -->
                     </div>
@@ -92,21 +99,21 @@
             <!-- Inventory Section -->
             <section id="inventory" class="section">
                 <div class="container">
-                    <h2>Inventario</h2>
+                    <h2 data-i18n="inventoryTitle">Inventario</h2>
                     <div class="filters">
-                        <input type="text" id="search-inventory" placeholder="Buscar producto...">
-                        <select id="filter-store">
-                            <option value="">Todas las tiendas</option>
+                        <input type="text" id="search-inventory" placeholder="Buscar producto..." data-i18n="searchProduct">
+                        <select id="filter-store" data-i18n="allStores">
+                            <option value="" data-i18n="allStores">Todas las tiendas</option>
                         </select>
                     </div>
                     <table id="inventory-table" class="data-table">
                         <thead>
                             <tr>
-                                <th>Producto</th>
-                                <th>Tienda</th>
-                                <th>Cantidad</th>
-                                <th>Estantería</th>
-                                <th>Estado</th>
+                                <th data-i18n="productName">Producto</th>
+                                <th data-i18n="storeName">Tienda</th>
+                                <th data-i18n="quantity">Cantidad</th>
+                                <th data-i18n="shelf">Estantería</th>
+                                <th data-i18n="status">Estado</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -119,7 +126,7 @@
             <!-- Employees Section -->
             <section id="employees" class="section">
                 <div class="container">
-                    <h2>Empleados</h2>
+                    <h2 data-i18n="employeeManagement">Empleados</h2>
                     <div id="employees-list" class="employees-grid">
                         <!-- Employees data will be loaded here -->
                     </div>
@@ -146,6 +153,12 @@
 
     <!-- Application Configuration (must be first) -->
     <script src="js/config.js"></script>
+    
+    <!-- Internationalization (i18n) -->
+    <script src="js/i18n-new.js"></script>
+    
+    <!-- Theme Management -->
+    <script src="js/theme-new.js"></script>
     
     <!-- API Layer -->
     <script src="js/api.js"></script>

@@ -39,10 +39,12 @@ def list_inventory():
         orion = get_orion_service()
         result = orion.list_entities(entity_type='InventoryItem', limit=1000)
         
+        # If query fails, return empty list instead of error
         if not result.get('success'):
-            return jsonify(format_error_response("Failed to fetch inventory")), 400
-        
-        items = result.get('entities', [])
+            logger.warning(f"Failed to query Orion: {result.get('error')}")
+            items = []
+        else:
+            items = result.get('entities', [])
         
         # Apply filters
         filtered = []

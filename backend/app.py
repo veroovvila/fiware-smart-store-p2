@@ -45,9 +45,9 @@ def create_app(config=None):
     
     app.config.from_object(config)
     
-    # Initialize extensions
-    CORS(app, origins=config.CORS_ORIGINS)
-    socketio = SocketIO(app, cors_allowed_origins=config.SOCKETIO_CORS_ALLOWED_ORIGINS)
+    # Initialize extensions - Allow all origins in development
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    socketio = SocketIO(app, cors_allowed_origins="*")
     
     logger.info(f"Flask app initialized with config: {config.__class__.__name__}")
     
@@ -91,6 +91,31 @@ def create_app(config=None):
             'version': '1.0.0',
             'environment': app.config['FLASK_ENV']
         }), 200
+    
+    # Diagnostic endpoint
+    @app.route('/api/v1/diagnostic', methods=['GET'])
+    def diagnostic():
+        """Check API connectivity"""
+        try:
+            # Use app context to access orion_service
+            health = app.orion_service.health_check()
+            
+            # Try to get products
+            result = app.orion_service.list_entities(entity_type='Product', limit=5)
+            
+            return jsonify({
+                'status': 'ok',
+                'orion_health': health,
+                'products_query': result,
+                'total_found': len(result.get('entities', [])) if result.get('success') else 0,
+                'message': 'Diagnostic check performed'
+            }), 200
+        except Exception as e:
+            logger.error(f"Diagnostic error: {str(e)}")
+            return jsonify({
+                'status': 'error',
+                'error': str(e)
+            }), 500
     
     # API version endpoint
     @app.route('/api/version', methods=['GET'])

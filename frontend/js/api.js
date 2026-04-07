@@ -13,9 +13,7 @@ const API = {
   async request(url, options = {}) {
     try {
       const defaultOptions = {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: {}
       };
 
       const response = await fetch(url, { ...defaultOptions, ...options });
@@ -46,8 +44,8 @@ const API = {
     params.append('page', page);
     params.append('limit', limit);
     if (name) params.append('name', name);
-    if (min_price !== null) params.append('min_price', min_price);
-    if (max_price !== null) params.append('max_price', max_price);
+    if (min_price !== null) params.append('minPrice', min_price);
+    if (max_price !== null) params.append('maxPrice', max_price);
 
     const url = `${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.PRODUCTS}?${params.toString()}`;
     return this.request(url);
@@ -104,6 +102,9 @@ const API = {
     const url = `${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.INVENTORY}/${inventoryId}/buy`;
     return this.request(url, {
       method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ quantity })
     });
   },

@@ -52,10 +52,12 @@ def list_products():
         orion = get_orion_service()
         result = orion.list_entities(entity_type='Product', limit=1000)
         
+        # If query fails, return empty list instead of error
         if not result.get('success'):
-            return jsonify(format_error_response("Failed to fetch products")), 400
-        
-        products = result.get('entities', [])
+            logger.warning(f"Failed to query Orion: {result.get('error')}")
+            products = []
+        else:
+            products = result.get('entities', [])
         
         # Apply filters
         filtered = []

@@ -5,13 +5,27 @@
 
 const UI = {
   /**
+   * Extract value from NGSIv2 attribute
+   * @param {any} value - NGSIv2 attribute or plain value
+   * @param {any} defaultValue - Default if not found
+   * @returns {any} Extracted value
+   */
+  getValue(value, defaultValue = '') {
+    if (value === null || value === undefined) return defaultValue;
+    if (typeof value === 'object' && value.value !== undefined) {
+      return value.value;
+    }
+    return value;
+  },
+
+  /**
    * Show loading state
    * @param {string} elementId - Element to show loader
    */
   showLoading(elementId) {
     const element = document.getElementById(elementId);
     if (element) {
-      element.innerHTML = '<div class="loading-spinner">Cargando...</div>';
+      element.innerHTML = '<div class="loading-spinner">' + I18N.t('loading') + '</div>';
       element.classList.add(CONFIG.UI.LOADING_CLASS);
     }
   },
@@ -62,11 +76,11 @@ const UI = {
    * @param {object} pagination - Pagination info
    */
   renderProducts(products, pagination = {}) {
-    const container = document.getElementById('stores-list');
+    const container = document.getElementById('products-list');
     if (!container) return;
 
     if (!products || products.length === 0) {
-      container.innerHTML = '<p class="no-data">No hay productos disponibles</p>';
+      container.innerHTML = '<p class="no-data">' + I18N.t('noProductsAvailable') + '</p>';
       return;
     }
 
@@ -80,22 +94,40 @@ const UI = {
    */
   createProductCard(product) {
     const id = product.id || '';
-    const name = product.name || 'Producto Sin Nombre';
-    const price = product.price || 0;
-    const description = product.description || '';
-    const imageUrl = product.image || 'https://via.placeholder.com/200';
+    const name = this.getValue(product.name, 'Producto Sin Nombre');
+    const price = this.getValue(product.price, 0);
+    const description = this.getValue(product.description, '');
+    
+    // Extract image URL - handle both NGSIv2 and plain formats
+    let imageUrl = '';
+    
+    if (product.image) {
+      if (typeof product.image === 'object' && product.image.value) {
+        imageUrl = product.image.value;
+      } else if (typeof product.image === 'string') {
+        imageUrl = product.image;
+      }
+    }
+    
+    // Use placeholder if no image
+    if (!imageUrl) {
+      const encodedName = encodeURIComponent(name);
+      imageUrl = `https://via.placeholder.com/500x400?text=${encodedName}`;
+    }
+
+    console.log('[UI] Product image:', name, '→', imageUrl);
 
     return `
       <div class="product-card" data-product-id="${id}">
         <div class="product-image">
-          <img src="${imageUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/200'">
+          <img src="${imageUrl}" alt="${name}" style="object-fit: cover; width: 100%; height: 200px;" onerror="this.src='https://via.placeholder.com/500x400?text=Error+Loading'">
         </div>
         <div class="product-info">
           <h3 class="product-name">${this.escapeHtml(name)}</h3>
           <p class="product-description">${this.escapeHtml(description)}</p>
           <div class="product-footer">
-            <span class="price">€${price.toFixed(2)}</span>
-            <button class="btn-details" data-product-id="${id}">Ver Detalles</button>
+            <span class="price">€${parseFloat(price).toFixed(2)}</span>
+            <button class="btn-details" data-product-id="${id}">${I18N.t('seeDetails')}</button>
           </div>
         </div>
       </div>
@@ -111,7 +143,7 @@ const UI = {
     if (!tbody) return;
 
     if (!inventoryItems || inventoryItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="no-data">No hay items en el inventario</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="no-data">' + I18N.t('noInventoryItems') + '</td></tr>';
       return;
     }
 
@@ -125,13 +157,13 @@ const UI = {
    */
   createInventoryRow(item) {
     const id = item.id || '';
-    const productName = item.productName || 'Desconocido';
-    const storeName = item.storeName || 'Desconocida';
-    const quantity = item.quantity || 0;
-    const shelf = item.shelf || 'N/A';
+    const productName = this.getValue(item.productName, 'Desconocido');
+    const storeName = this.getValue(item.storeName, 'Desconocida');
+    const quantity = parseFloat(this.getValue(item.quantity, 0));
+    const shelf = this.getValue(item.shelf, 'N/A');
     const isLowStock = quantity < CONFIG.UI.LOW_STOCK_THRESHOLD;
     const statusClass = isLowStock ? 'low-stock' : 'normal-stock';
-    const statusText = isLowStock ? '⚠️ Stock Bajo' : '✅ Normal';
+    const statusText = isLowStock ? I18N.t('lowStock') : I18N.t('normalStock');
 
     return `
       <tr class="inventory-row" data-inventory-id="${id}">
@@ -144,7 +176,7 @@ const UI = {
         </td>
         <td>
           <button class="btn-buy" data-inventory-id="${id}" data-quantity="${quantity}" ${quantity === 0 ? 'disabled' : ''}>
-            Comprar
+            ${I18N.t('buy')}
           </button>
         </td>
       </tr>
@@ -163,13 +195,13 @@ const UI = {
     const storeFilter = document.getElementById('filter-store');
     if (storeFilter && stores && stores.length > 0) {
       const options = stores.map(store => 
-        `<option value="${store.id}">${this.escapeHtml(store.name)}</option>`
+        `<option value="${store.id}">${this.escapeHtml(this.getValue(store.name, 'Tienda'))}</option>`
       ).join('');
-      storeFilter.innerHTML = '<option value="">Todas las tiendas</option>' + options;
+      storeFilter.innerHTML = '<option value="">' + I18N.t('allStores') + '</option>' + options;
     }
 
     if (!stores || stores.length === 0) {
-      if (container) container.innerHTML = '<p class="no-data">No hay tiendas disponibles</p>';
+      if (container) container.innerHTML = '<p class="no-data">' + I18N.t('noStoresAvailable') + '</p>';
       return;
     }
 
@@ -183,12 +215,12 @@ const UI = {
    */
   createStoreCard(store) {
     const id = store.id || '';
-    const name = store.name || 'Tienda Sin Nombre';
-    const address = store.address || '';
-    const city = store.city || '';
-    const country = store.country || '';
-    const phone = store.phone || '';
-    const email = store.email || '';
+    const name = this.getValue(store.name, 'Tienda Sin Nombre');
+    const address = this.getValue(store.address, '');
+    const city = this.getValue(store.city, '');
+    const country = this.getValue(store.country, '');
+    const phone = this.getValue(store.phone, '');
+    const email = this.getValue(store.email, '');
 
     return `
       <div class="store-card" data-store-id="${id}">
@@ -210,7 +242,7 @@ const UI = {
     if (!container) return;
 
     if (!employees || employees.length === 0) {
-      container.innerHTML = '<p class="no-data">No hay empleados disponibles</p>';
+      container.innerHTML = '<p class="no-data">' + I18N.t('noEmployeesAvailable') + '</p>';
       return;
     }
 
@@ -224,9 +256,9 @@ const UI = {
    */
   createEmployeeCard(employee) {
     const id = employee.id || '';
-    const name = employee.name || 'Empleado Sin Nombre';
-    const email = employee.email || '';
-    const role = employee.role || 'N/A';
+    const name = this.getValue(employee.name, 'Empleado Sin Nombre');
+    const email = this.getValue(employee.email, '');
+    const role = this.getValue(employee.role, 'N/A');
 
     return `
       <div class="employee-card" data-employee-id="${id}">

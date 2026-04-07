@@ -34,10 +34,12 @@ def list_employees():
         orion = get_orion_service()
         result = orion.list_entities(entity_type='Employee', limit=1000)
         
+        # If query fails, return empty list instead of error
         if not result.get('success'):
-            return jsonify(format_error_response("Failed to fetch employees")), 400
-        
-        employees = result.get('entities', [])
+            logger.warning(f"Failed to query Orion: {result.get('error')}")
+            employees = []
+        else:
+            employees = result.get('entities', [])
         paginated = paginate_results(employees, page, limit)
         
         return jsonify(format_success_response(

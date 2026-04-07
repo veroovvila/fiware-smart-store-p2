@@ -40,6 +40,20 @@
   --border-radius-lg: 12px;
 }
 
+/* Dark Mode Colors */
+html.theme-dark {
+  --primary-color: #3399ff;
+  --primary-dark: #0066cc;
+  --secondary-color: #2d2d3d;
+  --success-color: #47d57e;
+  --warning-color: #ffa946;
+  --error-color: #ff6b6b;
+  --text-dark: #e8e8f0;
+  --text-light: #b0b0c0;
+  --border-color: #3d3d4d;
+  --light-bg: #1a1a24;
+}
+
 /* Global Styles */
 * {
   margin: 0;
@@ -126,6 +140,47 @@ p {
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
   cursor: pointer;
+}
+
+/* Theme and Language Controls */
+.navbar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.control-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.3s;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn:hover {
+  transform: scale(1.1);
+}
+
+.language-select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: white;
+  color: var(--text-dark);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.language-select:hover,
+.language-select:focus {
+  border-color: var(--primary-color);
+  outline: none;
 }
 
 /* Container */
@@ -569,6 +624,130 @@ button:disabled,
   box-shadow: var(--shadow-md);
 }
 
+/* Dark Mode Specific Styles */
+html.theme-dark {
+  background-color: var(--light-bg);
+}
+
+html.theme-dark body {
+  background-color: var(--light-bg);
+  color: var(--text-dark);
+}
+
+html.theme-dark .navbar {
+  background-color: #242836;
+  border-bottom: 1px solid var(--border-color);
+}
+
+html.theme-dark .navbar-brand h1 {
+  color: #3399ff;
+}
+
+html.theme-dark .nav-link {
+  color: var(--text-light);
+}
+
+html.theme-dark .nav-link:hover {
+  color: #3399ff;
+  border-bottom-color: #3399ff;
+}
+
+html.theme-dark .language-select {
+  background-color: #2d2d3d;
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}
+
+html.theme-dark .language-select:hover,
+html.theme-dark .language-select:focus {
+  border-color: #3399ff;
+}
+
+html.theme-dark .section {
+  background-color: var(--light-bg);
+}
+
+html.theme-dark .product-card,
+html.theme-dark .store-card,
+html.theme-dark .employee-card,
+html.theme-dark .stats-card,
+html.theme-dark .data-table,
+html.theme-dark .card {
+  background-color: #2d2d3d;
+  border-color: var(--border-color);
+  color: var(--text-dark);
+}
+
+html.theme-dark .data-table thead {
+  background-color: #242836;
+  color: var(--text-dark);
+}
+
+html.theme-dark .data-table tbody tr:hover {
+  background-color: #3d3d4d;
+}
+
+html.theme-dark input[type="text"],
+html.theme-dark input[type="number"],
+html.theme-dark input[type="email"],
+html.theme-dark input[type="password"],
+html.theme-dark input[type="search"],
+html.theme-dark select,
+html.theme-dark textarea {
+  background-color: #2d2d3d;
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}
+
+html.theme-dark input::placeholder,
+html.theme-dark textarea::placeholder {
+  color: var(--text-light);
+}
+
+html.theme-dark .product-name {
+  color: var(--text-dark);
+}
+
+html.theme-dark .product-description {
+  color: var(--text-light);
+}
+
+html.theme-dark .price {
+  color: #3399ff;
+}
+
+html.theme-dark .btn-details,
+html.theme-dark .btn-buy {
+  background-color: #0066cc;
+  color: white;
+}
+
+html.theme-dark .btn-details:hover,
+html.theme-dark .btn-buy:hover {
+  background-color: #3399ff;
+}
+
+html.theme-dark .footer {
+  background-color: #242836;
+  color: var(--text-light);
+  border-top: 1px solid var(--border-color);
+}
+
+html.theme-dark .error-message {
+  background-color: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+}
+
+html.theme-dark .success-notification {
+  background-color: rgba(71, 213, 126, 0.2);
+  color: #47d57e;
+}
+
+html.theme-dark .loading-spinner {
+  color: var(--text-dark);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .navbar .container {
@@ -579,6 +758,12 @@ button:disabled,
   .navbar-menu {
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .navbar-controls {
+    width: 100%;
+    justify-content: center;
+    gap: var(--spacing-md);
   }
 
   .stores-grid,

@@ -33,7 +33,7 @@ class Config:
     JSON_SORT_KEYS = False
     
     # CORS Configuration
-    CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:8080').split(',')
+    CORS_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ORIGINS', 'http://localhost:8080').split(',')]
     
     # Security
     JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key-change-in-production')
