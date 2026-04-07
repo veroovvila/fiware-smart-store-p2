@@ -600,6 +600,282 @@ Response: 204 No Content
 
 ---
 
+## 6. Validaciones y Reglas de Integridad
+
+### 6.1 Validaciones por Entidad
+
+**Product:**
+- `name`: 3-100 caracteres, no vacío
+- `price`: > 0, máximo 2 decimales (999.99)
+- `size`: enum único (S, M, L, XL)
+- `color`: Debe ser formato hex válido (#RRGGBB con valores 0-F)
+- `originCountry`: 2 caracteres, código ISO 3166-1 válido
+- `image`: URL válida, debe resopivar correctamente
+
+**Store:**
+- `name`: 3-100 caracteres
+- `countryCode`: 2 caracteres ISO 3166-1 válido
+- `capacity`: > 0, valor numérico
+- `location`: geo:point válido (latitud -90 a 90, longitud -180 a 180)
+- `telephone`: Formato válido (opcional, si es proporcionado)
+- `url`: URL válida (opcional, si es proporcionado)
+
+**Employee:**
+- `name`: 3-100 caracteres
+- `salary`: > 0, puede tener decimales
+- `email`: Email válido, debe ser único en toda la base de datos
+- `username`: 3-50 caracteres, alfanumérico + underscore, único
+- `password`: Mínimo 8 caracteres antes de hash (hasheada con bcrypt después)
+- `role`: Valor no vacío
+- `refStore`: Debe referenciar una Store existente en Orion
+
+**Shelf:**
+- `name`: 3-100 caracteres
+- `capacity`: > 0, valor entero
+- `refStore`: Debe referenciar una Store existente
+
+**InventoryItem:**
+- `refProduct`: Debe referenciar un Product existente
+- `refStore`: Debe referenciar una Store existente
+- `refShelf`: Debe referenciar una Shelf existente Y pertenecer a la misma Store
+- `stockCount`: ≥ 0, valor entero
+- `shelfCount`: ≥ 0, valor entero, ≤ stockCount (no puede haber más en estantería que en almacén)
+- **Constraint:** `refShelf.refStore == refStore` (coherencia de Store)
+
+### 6.2 Reglas de Integridad Referencial
+
+**Restricción 1: Employee - Store**
+```
+Si un Employee referencia una Store, esa Store DEBE existir.
+Si se elimina una Store, se deben eliminar primeroServicios en cascada sus Employees.
+```
+
+**Restricción 2: InventoryItem - Product**
+```
+Si un InventoryItem referencia un Product, ese Product DEBE existir.
+Si se intenta eliminar un Product con InventoryItems, rechazar la operación.
+```
+
+**Restricción 3: Shelf - Store**
+```
+Si una Shelf referencia una Store, esa Store DEBE existir.
+Si se elimina una Store, se deben eliminar en cascada sus Shelves.
+```
+
+**Restricción 4: InventoryItem - Store - Shelf**
+```
+Si un InventoryItem referencia Shelf X y Store Y:
+  - La Shelf X DEBE pertenecer a la Store Y
+  - Validación: InventoryItem.refShelf debe estar en la misma Store
+```
+
+### 6.3 Validaciones de Cambio
+
+**Cambios permitidos en Product:**
+- ✅ price (desencadena suscripción)
+- ✅ name
+- ✅ originCountry
+- ✅ color
+- ❌ id (no permitido - clave primaria)
+- ❌ type (no permitido - tipo de entidad)
+
+**Cambios permitidos en InventoryItem:**
+- ✅ stockCount (desencadena suscripción si < 5)
+- ✅ shelfCount (debe ser ≤ stockCount)
+- ❌ refProduct (no permitido - cambiaría identidad del item)
+- ❌ refStore (no permitido - cambiaría ubicación)
+- ❌ refShelf (no permitido - cambiaría referencia)
+
+---
+
+## 7. Casos de Uso del Modelo
+
+### Caso de Uso 1: Compra de Producto
+
+```
+Precondiciones:
+  - Existe InventoryItem con refProduct=PRD-001, refStore=STORE-001, stockCount=10
+
+Pasos:
+  1. Cliente compra 1 unidad
+  2. Backend PATCH /v2/entities/INV-xxx/attrs {"stockCount": {"value": 9}}
+  3. Orion recibe cambio
+  4. Orion evalúa stockCount=9 (aún ≥ 5, no dispara)
+  5. Se repite... stockCount baja a 4
+  6. Orion DETECTA: stockCount < 5 ✓
+  7. Orion dispara Suscripción "Low Stock"
+  8. Orion POST /notifications al Backend
+  9. Backend recibe JSON de Orion
+  10. Backend extrae: product_id, store_id, shelf_id, stock_count
+  11. Backend emite Socket.IO "low_stock" a todos clientes
+  12. Frontend muestra toast: "⚠️ Bajo stock: PRD-001 (4 unidades)"
+
+Postcondiciones:
+  - InventoryItem.stockCount = 4
+  - Notificación mostrada en UI
+  - Timestamp registrado en sistema de notificaciones
+```
+
+### Caso de Uso 2: Creación de Tienda con Estanterías
+
+```
+Precondiciones:
+  - Base de datos vacía
+
+Pasos:
+  1. Backend POST /v2/entities {"id": "STORE-002", "type": "Store", ...}
+  2. Orion crea Store-002 en MongoDB
+  3. Backend POST /v2/entities {"id": "SHELF-STORE002-A1", "type": "Shelf", "refStore": "STORE-002"}
+  4. Orion crea Shelf-STORE002-A1
+  5. Backend POST /v2/entities {"id": "SHELF-STORE002-A2", ...} (repetir 4 veces)
+  6. Ahora Store-002 tiene 4 Shelves
+
+Postcondiciones:
+  - Store-002 existe
+  - 4 Shelves existen y referencian a Store-002
+  - InventoryItem puede ser creado referenciando estos
+```
+
+### Caso de Uso 3: Cambio de Precio en Cascada
+
+```
+Precondiciones:
+  - existe Product-PRD-001 con price=100
+  - Existen 3 InventoryItems de este producto en 3 tiendas
+  - Suscripción "Price Change" está activa
+
+Pasos:
+  1. Gerente hace PATCH /v2/entities/PRD-001/attrs {"price": {"value": 89.99}}
+  2. Orion actualiza atributo price
+  3. Orion DETECTA: cambio en atributo monitoreado (price) ✓
+  4. Orion dispara Suscripción "Price Change"
+  5. Orion POST /notifications al Backend con nuevo precio
+  6. Backend recibe notificación
+  7. Backend emite Socket.IO "price_change" a todos clientes
+  8. Clientes en vista "Products" ven actualización: PRD-001 $100 → $89.99
+  9. Clientes en vista "Store Detail" también ven precio actualizado
+
+Postcondiciones:
+  - PRD-001.price = 89.99 en Orion
+  - Todos los InventoryItems con refProduct=PRD-001 ahora muestran nuevo precio
+  - No hay actualización individual de InventoryItems (precio es atributo de Product)
+```
+
+---
+
+## 8. Estadísticas de Datos Iniciales
+
+| Entidad | Cantidad | Detalles |
+|---------|----------|----------|
+| **Products** | 10 | Variedad: Electrónica, Ropa, Alimentos, etc. |
+| **Stores** | 4 | Madrid, Barcelona, Valencia, Bilbao (localizadas en España) |
+| **Employees** | 4 | Distribuidos: Gerentes, Almaceneros |
+| **Shelves** | 16 | 4 por cada tienda (A1, A2, B1, B2) |
+| **InventoryItems** | ≥64 | Múltiples productos por estantería |
+| **Subscriptions** | 2 | Price Change, Low Stock |
+| **Registrations** | 3 | Temperature, Humidity, Tweets |
+
+### Distribución de Inventario
+
+```
+Store-001 (Madrid):
+  ├─ Shelf-001-A1 (Electrónica)
+  │  ├─ PRD-001 (Laptop)
+  │  ├─ PRD-002 (iPhone)
+  │  └─ PRD-003 (Tablet)
+  ├─ Shelf-001-A2 (Accesorios)
+  │  ├─ PRD-004 (Auriculares)
+  │  └─ PRD-005 (Cargadores)
+  ├─ Shelf-001-B1 (Ropa)
+  │  ├─ PRD-006 (Camiseta)
+  │  └─ PRD-007 (Pantalones)
+  └─ Shelf-001-B2 (Premium)
+     ├─ PRD-008 (SmartWatch)
+     └─ PRD-009 (Premium Laptop)
+
+Store-002 (Barcelona): Similar distribution
+Store-003 (Valencia): Similar distribution
+Store-004 (Bilbao): Similar distribution
+```
+
+---
+
+## 9. Indexed Fields (MongoDB)
+
+Para optimizar querys, Orion crea índices en:
+- `_id` (siempre indexado)
+- `type` (para filtros por tipo)
+- `refProduct`, `refStore`, `refShelf` (para joins/lookups)
+- `price` (para rangos de precio)
+- `email` (para búsquedas únicas en Employee)
+- `location` (para queries geoespaciales)
+
+---
+
+## 10. Formato de Notificación de Suscripción
+
+**Cuando se dispara una suscripción, Orion envía POST a /notifications:**
+
+```json
+{
+  "subscriptionId": "sub-price-change-123abc",
+  "data": [
+    {
+      "id": "PRD-001",
+      "type": "Product",
+      "name": {
+        "type": "Text",
+        "value": "Laptop Dell XPS 13",
+        "metadata": {}
+      },
+      "price": {
+        "type": "Number",
+        "value": 799.99,
+        "metadata": {
+          "previousValue": {
+            "type": "Number",
+            "value": 899.99
+          },
+          "actionType": {
+            "type": "Text",
+            "value": "UPDATE"
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+Backend parsea esto y emite JSON simplificado a clientes vía Socket.IO.
+
+---
+
+## 11. Benchmark de Relaciones
+
+**Consulta: Obtener todos los productos disponibles en una tienda con su inventario**
+
+```
+GET /v2/entities?type=InventoryItem&q=refStore==STORE-001&attrs=refProduct,stockCount,shelfCount
+
+Resultado: 16+ InventoryItems (4 shelves × 4+ productos/shelf)
+```
+
+**Consulta: Obtener empleados de una tienda**
+
+```
+GET /v2/entities?type=Employee&q=refStore==STORE-001
+
+Resultado: 1-2 empleados por tienda
+```
+
+**Performance esperado:**
+- < 200ms para queries de miles de items
+- < 500ms para joins complejos (con metadata)
+- Latencia de suscripciones: < 500ms desde cambio a notificación
+
+---
+
 ## 6. Suscripciones NGSIv2
 
 ### 6.1 Suscripción 1: Cambio de Precio

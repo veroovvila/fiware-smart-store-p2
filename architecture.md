@@ -393,9 +393,88 @@ Backend → Frontend:
 
 ---
 
-## 4. Integración con Orion Context Broker
+## 4. Patrones de Diseño y Decisiones Arquitectónicas
 
-### 4.1 Endpoints NGSIv2 Utilizados
+### 4.1 Patrón Service Layer
+
+El backend utiliza un patrón Service Layer para separar concerns:
+
+**Ventajas:**
+- ✅ Reutilización de lógica de negocio
+- ✅ Testabilidad mejorada
+- ✅ Desacoplamiento entre rutas y servicios
+- ✅ Centralización de lógica Orion
+
+**Capas:**
+```
+Routes (Capa HTTP)
+    ↓
+Services (Lógica de negocio)
+    ↓
+External APIs (Orion, Weather, Twitter)
+```
+
+### 4.2 Patrón Publish-Subscribe (Suscripciones)
+
+Orion Context Broker proporciona notificaciones push:
+
+- **Productor**: Cambios en entidades (PATCH/DELETE)
+- **Orion**: Detecta cambios y emite notificaciones
+- **Consumidor**: Backend recibe via webhook
+- **Distribuidor**: Backend propaga via Socket.IO
+
+Ventajas:
+- ✅ Desacoplamiento temporal (no espera respuesta)
+- ✅ Escalabilidad horizontal (múltiples subscribers)
+- ✅ Actualizaciones en tiempo real
+
+### 4.3 Patrón Reference (Relaciones entre Entidades)
+
+Orion no soporta foreign keys tradicionales, usamos atributos de tipo Relationship:
+
+```json
+{
+  "id": "INV-001",
+  "type": "InventoryItem",
+  "refProduct": {
+    "type": "Relationship",
+    "value": "PRD-001"
+  },
+  "refStore": {
+    "type": "Relationship",
+    "value": "STORE-001"
+  }
+}
+```
+
+Validación referencial se hace en backend (integrity checks).
+
+### 4.4 Patrón Metadata (Anotaciones en Atributos)
+
+Cada atributo puede incluir metadata sobre su origen/tipo:
+
+```json
+"temperature": {
+  "type": "Number",
+  "value": 22.5,
+  "metadata": {
+    "provider": "WeatherAPI",
+    "lastUpdate": "2026-04-06T10:30:00Z",
+    "accuracy": 1.0
+  }
+}
+```
+
+Casos de uso:
+- Rastreabilidad de datos
+- Validación de freshness de datos
+- Routing inteligente
+
+---
+
+## 5. Integración con Orion Context Broker
+
+### 5.1 Endpoints NGSIv2 Utilizados
 
 **Gestión de Entidades:**
 
@@ -431,7 +510,7 @@ DELETE /v2/entities/<id>
   Eliminar entidad
 ```
 
-### 4.2 Metadata en Atributos
+### 5.2 Metadata en Atributos
 
 **Ejemplo:** Store con atributos externos
 
@@ -459,7 +538,7 @@ DELETE /v2/entities/<id>
 }
 ```
 
-### 4.3 Suscripciones NGSIv2
+### 5.3 Suscripciones NGSIv2
 
 **Suscripción 1: Cambio de Precio**
 
@@ -503,7 +582,7 @@ DELETE /v2/entities/<id>
 }
 ```
 
-### 4.4 Registrations (Proveedores Externos)
+### 5.4 Registrations (Proveedores Externos)
 
 **Ejemplo: Weather Provider**
 
@@ -531,9 +610,9 @@ Flujo:
 
 ---
 
-## 5. Socket.IO y Notificaciones en Tiempo Real
+## 6. Socket.IO y Notificaciones en Tiempo Real
 
-### 5.1 Configuración Cliente
+### 6.1 Configuración Cliente
 
 ```javascript
 // frontend/js/socket.js
@@ -577,7 +656,7 @@ socket.on('disconnect', function() {
 });
 ```
 
-### 5.2 Configuración Servidor
+### 6.2 Configuración Servidor
 
 ```python
 # backend/app.py
