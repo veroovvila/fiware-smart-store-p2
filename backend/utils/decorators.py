@@ -140,8 +140,12 @@ def log_request(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         logger.info(f"{request.method} {request.path} - {func.__name__}")
-        if request.is_json:
-            logger.debug(f"Request data: {request.get_json()}")
+        # Only try to get JSON if the request actually has a body and is JSON
+        if request.is_json and request.method in ['POST', 'PUT', 'PATCH']:
+            try:
+                logger.debug(f"Request data: {request.get_json()}")
+            except Exception as e:
+                logger.debug(f"Could not parse JSON request: {str(e)}")
         return func(*args, **kwargs)
     
     return wrapper
