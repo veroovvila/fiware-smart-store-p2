@@ -1,0 +1,102 @@
+[
+  {
+    "id": "urn:ngsi-ld:Product:P001",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Organic Coffee Beans"},
+    "price": {"type": "Number", "value": 12.99},
+    "size": {"type": "Text", "value": "500g"},
+    "color": {"type": "Text", "value": "Brown"},
+    "originCountry": {"type": "Text", "value": "Colombia"},
+    "image": {"type": "Text", "value": "/images/organicCofeeBeans.webp"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P002",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Greek Yogurt"},
+    "price": {"type": "Number", "value": 5.99},
+    "size": {"type": "Text", "value": "500ml"},
+    "color": {"type": "Text", "value": "White"},
+    "originCountry": {"type": "Text", "value": "Greece"},
+    "image": {"type": "Text", "value": "/images/GreekYogurt.jpg"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P003",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Whole Wheat Bread"},
+    "price": {"type": "Number", "value": 3.49},
+    "size": {"type": "Text", "value": "800g"},
+    "color": {"type": "Text", "value": "Brown"},
+    "originCountry": {"type": "Text", "value": "Spain"},
+    "image": {"type": "Text", "value": "/images/WholeWheatBread.webp"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P004",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Fresh Tomatoes"},
+    "price": {"type": "Number", "value": 2.99},
+    "size": {"type": "Text", "value": "1kg"},
+    "color": {"type": "Text", "value": "Red"},
+    "originCountry": {"type": "Text", "value": "Italy"},
+    "image": {"type": "Text", "value": "/images/FreshTomatoes.jpg"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P005",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Cheddar Cheese"},
+    "price": {"type": "Number", "value": 8.49},
+    "size": {"type": "Text", "value": "400g"},
+    "color": {"type": "Text", "value": "Yellow"},
+    "originCountry": {"type": "Text", "value": "United Kingdom"},
+    "image": {"type": "Text", "value": "/images/CheddarCheese.webp"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P006",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Extra Virgin Olive Oil"},
+    "price": {"type": "Number", "value": 14.99},
+    "size": {"type": "Text", "value": "250ml"},
+    "color": {"type": "Text", "value": "Green"},
+    "originCountry": {"type": "Text", "value": "Greece"},
+    "image": {"type": "Text", "value": "/images/ExtraVirginOliveOil.jpg"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P007",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Almond Butter"},
+    "price": {"type": "Number", "value": 9.99},
+    "size": {"type": "Text", "value": "300g"},
+    "color": {"type": "Text", "value": "Tan"},
+    "originCountry": {"type": "Text", "value": "USA"},
+    "image": {"type": "Text", "value": "/images/AlmondButter.webp"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P008",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Blueberries"},
+    "price": {"type": "Number", "value": 6.99},
+    "size": {"type": "Text", "value": "300g"},
+    "color": {"type": "Text", "value": "Blue"},
+    "originCountry": {"type": "Text", "value": "Canada"},
+    "image": {"type": "Text", "value": "/images/Blueberries.webp"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P009",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Dark Chocolate 85%"},
+    "price": {"type": "Number", "value": 7.49},
+    "size": {"type": "Text", "value": "100g"},
+    "color": {"type": "Text", "value": "Black"},
+    "originCountry": {"type": "Text", "value": "Belgium"},
+    "image": {"type": "Text", "value": "/images/DarkChocolate85%.webp"}
+  },
+  {
+    "id": "urn:ngsi-ld:Product:P010",
+    "type": "Product",
+    "name": {"type": "Text", "value": "Free-Range Eggs"},
+    "price": {"type": "Number", "value": 4.99},
+    "size": {"type": "Text", "value": "12 units"},
+    "color": {"type": "Text", "value": "Brown"},
+    "originCountry": {"type": "Text", "value": "France"},
+    "image": {"type": "Text", "value": "/images/Free-RangeEggs.webp"}
+  }
+]

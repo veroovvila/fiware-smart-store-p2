@@ -1,0 +1,42 @@
+[
+  {
+    "id": "urn:ngsi-ld:Employee:E001",
+    "type": "Employee",
+    "name": {"type": "Text", "value": "Maria Garcia"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S001"},
+    "position": {"type": "Text", "value": "Store Manager"},
+    "skills": {"type": "array", "value": ["management", "customer-service", "inventory"]},
+    "email": {"type": "Text", "value": "maria.garcia@market.es"},
+    "phone": {"type": "Text", "value": "+34-91-6666001"}
+  },
+  {
+    "id": "urn:ngsi-ld:Employee:E002",
+    "type": "Employee",
+    "name": {"type": "Text", "value": "Juan Rodriguez"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S002"},
+    "position": {"type": "Text", "value": "Shelf Attendant"},
+    "skills": {"type": "array", "value": ["shelving", "stocking", "cleaning"]},
+    "email": {"type": "Text", "value": "juan.rodriguez@market.es"},
+    "phone": {"type": "Text", "value": "+34-91-6666002"}
+  },
+  {
+    "id": "urn:ngsi-ld:Employee:E003",
+    "type": "Employee",
+    "name": {"type": "Text", "value": "Ana Martinez"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S003"},
+    "position": {"type": "Text", "value": "Cashier"},
+    "skills": {"type": "array", "value": ["customer-service", "cash-handling", "communication"]},
+    "email": {"type": "Text", "value": "ana.martinez@market.es"},
+    "phone": {"type": "Text", "value": "+34-91-6666003"}
+  },
+  {
+    "id": "urn:ngsi-ld:Employee:E004",
+    "type": "Employee",
+    "name": {"type": "Text", "value": "Carlos Lopez"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S004"},
+    "position": {"type": "Text", "value": "Inventory Manager"},
+    "skills": {"type": "array", "value": ["inventory-management", "data-entry", "reporting"]},
+    "email": {"type": "Text", "value": "carlos.lopez@market.es"},
+    "phone": {"type": "Text", "value": "+34-91-6666004"}
+  }
+]

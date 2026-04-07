@@ -1,0 +1,306 @@
+/**
+ * FIWARE Smart Store - UI Rendering Layer
+ * Handles all DOM manipulation and UI updates
+ */
+
+const UI = {
+  /**
+   * Extract value from NGSIv2 attribute
+   * @param {any} value - NGSIv2 attribute or plain value
+   * @param {any} defaultValue - Default if not found
+   * @returns {any} Extracted value
+   */
+  getValue(value, defaultValue = '') {
+    if (value === null || value === undefined) return defaultValue;
+    if (typeof value === 'object' && value.value !== undefined) {
+      return value.value;
+    }
+    return value;
+  },
+
+  /**
+   * Show loading state
+   * @param {string} elementId - Element to show loader
+   */
+  showLoading(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.innerHTML = '<div class="loading-spinner">' + I18N.t('loading') + '</div>';
+      element.classList.add(CONFIG.UI.LOADING_CLASS);
+    }
+  },
+
+  /**
+   * Show error message
+   * @param {string} elementId - Element to show error
+   * @param {string} message - Error message
+   */
+  showError(elementId, message) {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.innerHTML = `<div class="error-message">⚠️ ${message}</div>`;
+      element.classList.add(CONFIG.UI.ERROR_CLASS);
+    }
+  },
+
+  /**
+   * Show success message
+   * @param {string} message - Success message
+   * @param {number} duration - Duration in ms (default 3000)
+   */
+  showSuccess(message, duration = 3000) {
+    const notification = document.createElement('div');
+    notification.className = 'success-notification';
+    notification.innerHTML = `✅ ${message}`;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.remove();
+    }, duration);
+  },
+
+  /**
+   * Update dashboard statistics
+   * @param {object} stats - Statistics object with counts
+   */
+  updateStats(stats) {
+    document.getElementById('store-count').textContent = stats.storeCount || 0;
+    document.getElementById('product-count').textContent = stats.productCount || 0;
+    document.getElementById('inventory-count').textContent = stats.inventoryCount || 0;
+    document.getElementById('employee-count').textContent = stats.employeeCount || 0;
+  },
+
+  /**
+   * Render products list
+   * @param {array} products - Products array
+   * @param {object} pagination - Pagination info
+   */
+  renderProducts(products, pagination = {}) {
+    const container = document.getElementById('products-list');
+    if (!container) return;
+
+    if (!products || products.length === 0) {
+      container.innerHTML = '<p class="no-data">' + I18N.t('noProductsAvailable') + '</p>';
+      return;
+    }
+
+    container.innerHTML = products.map(product => this.createProductCard(product)).join('');
+  },
+
+  /**
+   * Create a single product card HTML
+   * @param {object} product - Product object
+   * @returns {string} HTML string
+   */
+  createProductCard(product) {
+    const id = product.id || '';
+    const name = this.getValue(product.name, 'Producto Sin Nombre');
+    const price = this.getValue(product.price, 0);
+    const description = this.getValue(product.description, '');
+    
+    // Extract image URL - handle both NGSIv2 and plain formats
+    let imageUrl = '';
+    
+    if (product.image) {
+      if (typeof product.image === 'object' && product.image.value) {
+        imageUrl = product.image.value;
+      } else if (typeof product.image === 'string') {
+        imageUrl = product.image;
+      }
+    }
+    
+    // Use placeholder if no image
+    if (!imageUrl) {
+      const encodedName = encodeURIComponent(name);
+      imageUrl = `https://via.placeholder.com/500x400?text=${encodedName}`;
+    }
+
+    console.log('[UI] Product image:', name, '→', imageUrl);
+
+    return `
+      <div class="product-card" data-product-id="${id}">
+        <div class="product-image">
+          <img src="${imageUrl}" alt="${name}" style="object-fit: cover; width: 100%; height: 200px;" onerror="this.src='https://via.placeholder.com/500x400?text=Error+Loading'">
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">${this.escapeHtml(name)}</h3>
+          <p class="product-description">${this.escapeHtml(description)}</p>
+          <div class="product-footer">
+            <span class="price">€${parseFloat(price).toFixed(2)}</span>
+            <button class="btn-details" data-product-id="${id}">${I18N.t('seeDetails')}</button>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Render inventory table
+   * @param {array} inventoryItems - Inventory items array
+   */
+  renderInventory(inventoryItems) {
+    const tbody = document.querySelector('#inventory-table tbody');
+    if (!tbody) return;
+
+    if (!inventoryItems || inventoryItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="no-data">' + I18N.t('noInventoryItems') + '</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = inventoryItems.map(item => this.createInventoryRow(item)).join('');
+  },
+
+  /**
+   * Create a single inventory table row HTML
+   * @param {object} item - Inventory item
+   * @returns {string} HTML string
+   */
+  createInventoryRow(item) {
+    const id = item.id || '';
+    const productName = this.getValue(item.productName, 'Desconocido');
+    const storeName = this.getValue(item.storeName, 'Desconocida');
+    const quantity = parseFloat(this.getValue(item.quantity, 0));
+    const shelf = this.getValue(item.shelf, 'N/A');
+    const isLowStock = quantity < CONFIG.UI.LOW_STOCK_THRESHOLD;
+    const statusClass = isLowStock ? 'low-stock' : 'normal-stock';
+    const statusText = isLowStock ? I18N.t('lowStock') : I18N.t('normalStock');
+
+    return `
+      <tr class="inventory-row" data-inventory-id="${id}">
+        <td>${this.escapeHtml(productName)}</td>
+        <td>${this.escapeHtml(storeName)}</td>
+        <td class="quantity">${quantity}</td>
+        <td>${shelf}</td>
+        <td>
+          <span class="status ${statusClass}">${statusText}</span>
+        </td>
+        <td>
+          <button class="btn-buy" data-inventory-id="${id}" data-quantity="${quantity}" ${quantity === 0 ? 'disabled' : ''}>
+            ${I18N.t('buy')}
+          </button>
+        </td>
+      </tr>
+    `;
+  },
+
+  /**
+   * Render stores list
+   * @param {array} stores - Stores array
+   */
+  renderStores(stores) {
+    const container = document.querySelector('#stores-list');
+    if (!container) return;
+
+    // Update store filter
+    const storeFilter = document.getElementById('filter-store');
+    if (storeFilter && stores && stores.length > 0) {
+      const options = stores.map(store => 
+        `<option value="${store.id}">${this.escapeHtml(this.getValue(store.name, 'Tienda'))}</option>`
+      ).join('');
+      storeFilter.innerHTML = '<option value="">' + I18N.t('allStores') + '</option>' + options;
+    }
+
+    if (!stores || stores.length === 0) {
+      if (container) container.innerHTML = '<p class="no-data">' + I18N.t('noStoresAvailable') + '</p>';
+      return;
+    }
+
+    container.innerHTML = stores.map(store => this.createStoreCard(store)).join('');
+  },
+
+  /**
+   * Create a single store card HTML
+   * @param {object} store - Store object
+   * @returns {string} HTML string
+   */
+  createStoreCard(store) {
+    const id = store.id || '';
+    const name = this.getValue(store.name, 'Tienda Sin Nombre');
+    const address = this.getValue(store.address, '');
+    const city = this.getValue(store.city, '');
+    const country = this.getValue(store.country, '');
+    const phone = this.getValue(store.phone, '');
+    const email = this.getValue(store.email, '');
+
+    return `
+      <div class="store-card" data-store-id="${id}">
+        <h3>${this.escapeHtml(name)}</h3>
+        <p class="address">📍 ${this.escapeHtml(address)}</p>
+        <p class="city">${this.escapeHtml(city)}, ${this.escapeHtml(country)}</p>
+        <p class="contact">📞 ${phone}</p>
+        <p class="email">✉️ ${email}</p>
+      </div>
+    `;
+  },
+
+  /**
+   * Render employees list
+   * @param {array} employees - Employees array
+   */
+  renderEmployees(employees) {
+    const container = document.getElementById('employees-list');
+    if (!container) return;
+
+    if (!employees || employees.length === 0) {
+      container.innerHTML = '<p class="no-data">' + I18N.t('noEmployeesAvailable') + '</p>';
+      return;
+    }
+
+    container.innerHTML = employees.map(employee => this.createEmployeeCard(employee)).join('');
+  },
+
+  /**
+   * Create a single employee card HTML
+   * @param {object} employee - Employee object
+   * @returns {string} HTML string
+   */
+  createEmployeeCard(employee) {
+    const id = employee.id || '';
+    const name = this.getValue(employee.name, 'Empleado Sin Nombre');
+    const email = this.getValue(employee.email, '');
+    const role = this.getValue(employee.role, 'N/A');
+
+    return `
+      <div class="employee-card" data-employee-id="${id}">
+        <h3>${this.escapeHtml(name)}</h3>
+        <p class="role">📋 ${this.escapeHtml(role)}</p>
+        <p class="email">✉️ ${email}</p>
+      </div>
+    `;
+  },
+
+  /**
+   * Escape HTML special characters to prevent XSS
+   * @param {string} text - Text to escape
+   * @returns {string} Escaped text
+   */
+  escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+  },
+
+  /**
+   * Show buy dialog
+   * @param {string} inventoryId - Inventory item ID
+   * @param {number} maxQuantity - Maximum quantity available
+   * @param {function} callback - Callback function when user buys
+   */
+  showBuyDialog(inventoryId, maxQuantity, callback) {
+    const quantity = prompt(`¿Cuántas unidades desea comprar? (Máximo: ${maxQuantity})`, '1');
+    
+    if (quantity !== null) {
+      const amount = parseInt(quantity);
+      if (isNaN(amount) || amount <= 0 || amount > maxQuantity) {
+        UI.showError('', `Por favor, ingrese una cantidad válida entre 1 y ${maxQuantity}`);
+        return;
+      }
+      callback(amount);
+    }
+  }
+};

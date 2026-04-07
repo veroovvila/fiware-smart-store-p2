@@ -1,0 +1,46 @@
+[
+  {
+    "id": "urn:ngsi-ld:Store:S001",
+    "type": "Store",
+    "name": {"type": "Text", "value": "Downtown Market"},
+    "location": {"type": "geo:json", "value": {"type": "Point", "coordinates": [-3.7038, 40.4168]}},
+    "countryCode": {"type": "Text", "value": "ES"},
+    "city": {"type": "Text", "value": "Madrid"},
+    "capacity": {"type": "Number", "value": 150},
+    "phone": {"type": "Text", "value": "+34-91-5555001"},
+    "email": {"type": "Text", "value": "downtown@market.es"}
+  },
+  {
+    "id": "urn:ngsi-ld:Store:S002",
+    "type": "Store",
+    "name": {"type": "Text", "value": "Port Store"},
+    "location": {"type": "geo:json", "value": {"type": "Point", "coordinates": [-3.6883, 40.4530]}},
+    "countryCode": {"type": "Text", "value": "ES"},
+    "city": {"type": "Text", "value": "Madrid"},
+    "capacity": {"type": "Number", "value": 200},
+    "phone": {"type": "Text", "value": "+34-91-5555002"},
+    "email": {"type": "Text", "value": "port@market.es"}
+  },
+  {
+    "id": "urn:ngsi-ld:Store:S003",
+    "type": "Store",
+    "name": {"type": "Text", "value": "North Plaza"},
+    "location": {"type": "geo:json", "value": {"type": "Point", "coordinates": [-3.6925, 40.4698]}},
+    "countryCode": {"type": "Text", "value": "ES"},
+    "city": {"type": "Text", "value": "Madrid"},
+    "capacity": {"type": "Number", "value": 180},
+    "phone": {"type": "Text", "value": "+34-91-5555003"},
+    "email": {"type": "Text", "value": "north@market.es"}
+  },
+  {
+    "id": "urn:ngsi-ld:Store:S004",
+    "type": "Store",
+    "name": {"type": "Text", "value": "South Station"},
+    "location": {"type": "geo:json", "value": {"type": "Point", "coordinates": [-3.6931, 40.3826]}},
+    "countryCode": {"type": "Text", "value": "ES"},
+    "city": {"type": "Text", "value": "Madrid"},
+    "capacity": {"type": "Number", "value": 160},
+    "phone": {"type": "Text", "value": "+34-91-5555004"},
+    "email": {"type": "Text", "value": "south@market.es"}
+  }
+]

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FIWARE Smart Store - Sistema inteligente de gestión de tiendas">
+    <title>FIWARE Smart Store</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <h1>Smart Store</h1>
+                </div>
+                <ul class="navbar-menu">
+                    <li><a href="#dashboard" class="nav-link" data-i18n="dashboard">Dashboard</a></li>
+                    <li><a href="#stores" class="nav-link" data-i18n="stores">Tiendas</a></li>
+                    <li><a href="#inventory" class="nav-link" data-i18n="inventory">Inventario</a></li>
+                    <li><a href="#employees" class="nav-link" data-i18n="employees">Empleados</a></li>
+                </ul>
+                <div class="navbar-controls">
+                    <button id="theme-toggle" class="control-btn" title="Toggle Dark/Light Mode">🌙</button>
+                    <select id="language-select" class="language-select">
+                        <option value="es">Español</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Products Section -->
+            <section id="dashboard" class="section">
+                <div class="container">
+                    <h2 data-i18n="availableProducts">📊 Productos Disponibles</h2>
+                    <div class="filters">
+                        <input type="text" id="search-products" placeholder="Buscar por nombre..." data-i18n="searchByName">
+                        <div class="price-filter">
+                            <label data-i18n="minPrice">Precio mínimo:</label>
+                            <input type="number" id="price-min" placeholder="0" min="0" step="0.01">
+                            <label data-i18n="maxPrice">Precio máximo:</label>
+                            <input type="number" id="price-max" placeholder="1000" min="0" step="0.01">
+                        </div>
+                    </div>
+                    <div id="products-list" class="stores-grid">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-stats" class="section" style="display:none;">
+                <div class="container">
+                    <h2 data-i18n="dashboardTitle">Dashboard</h2>
+                    <div class="dashboard-grid">
+                        <div class="card stats-card">
+                            <h3 data-i18n="activeStores">Tiendas Activas</h3>
+                            <p class="stat-value" id="store-count">0</p>
+                        </div>
+                        <div class="card stats-card">
+                            <h3 data-i18n="products">Productos</h3>
+                            <p class="stat-value" id="product-count">0</p>
+                        </div>
+                        <div class="card stats-card">
+                            <h3 data-i18n="totalInventory">Inventario Total</h3>
+                            <p class="stat-value" id="inventory-count">0</p>
+                        </div>
+                        <div class="card stats-card">
+                            <h3 data-i18n="employees">Empleados</h3>
+                            <p class="stat-value" id="employee-count">0</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Map Section -->
+            <section id="map-section" class="section">
+                <div class="container">
+                    <h2 data-i18n="storeLocations">Ubicación de Tiendas</h2>
+                    <div id="map" class="map-container"></div>
+                </div>
+            </section>
+
+            <!-- Stores Section -->
+            <section id="stores" class="section">
+                <div class="container">
+                    <h2 data-i18n="storeManagement">Gestión de Tiendas</h2>
+                    <div id="stores-list" class="stores-grid">
+                        <!-- Stores data will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inventory Section -->
+            <section id="inventory" class="section">
+                <div class="container">
+                    <h2 data-i18n="inventoryTitle">Inventario</h2>
+                    <div class="filters">
+                        <input type="text" id="search-inventory" placeholder="Buscar producto..." data-i18n="searchProduct">
+                        <select id="filter-store" data-i18n="allStores">
+                            <option value="" data-i18n="allStores">Todas las tiendas</option>
+                        </select>
+                    </div>
+                    <table id="inventory-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="productName">Producto</th>
+                                <th data-i18n="storeName">Tienda</th>
+                                <th data-i18n="quantity">Cantidad</th>
+                                <th data-i18n="shelf">Estantería</th>
+                                <th data-i18n="status">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Inventory data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Employees Section -->
+            <section id="employees" class="section">
+                <div class="container">
+                    <h2 data-i18n="employeeManagement">Empleados</h2>
+                    <div id="employees-list" class="employees-grid">
+                        <!-- Employees data will be loaded here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2026 FIWARE Smart Store - Práctica 2</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Socket.IO for real-time notifications -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- Leaflet for map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Three.js for 3D visualization (optional) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Application Configuration (must be first) -->
+    <script src="js/config.js"></script>
+    
+    <!-- Internationalization (i18n) -->
+    <script src="js/i18n-new.js"></script>
+    
+    <!-- Theme Management -->
+    <script src="js/theme-new.js"></script>
+    
+    <!-- API Layer -->
+    <script src="js/api.js"></script>
+    
+    <!-- UI Components -->
+    <script src="js/ui.js"></script>
+    
+    <!-- Event Handlers -->
+    <script src="js/events.js"></script>
+    
+    <!-- Real-time Notifications -->
+    <script src="js/notifications.js"></script>
+    
+    <!-- Main Application (must be last) -->
+    <script src="js/app.js"></script>
+
+</body>
+</html>

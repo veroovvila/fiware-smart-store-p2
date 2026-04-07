@@ -1,0 +1,114 @@
+[
+  {
+    "id": "urn:ngsi-ld:Shelf:SH001",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 1"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S001"},
+    "capacity": {"type": "Number", "value": 50}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH002",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 2"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S001"},
+    "capacity": {"type": "Number", "value": 50}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH003",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 3"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S001"},
+    "capacity": {"type": "Number", "value": 50}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH004",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 4"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S001"},
+    "capacity": {"type": "Number", "value": 50}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH005",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 1"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S002"},
+    "capacity": {"type": "Number", "value": 60}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH006",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 2"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S002"},
+    "capacity": {"type": "Number", "value": 60}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH007",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 3"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S002"},
+    "capacity": {"type": "Number", "value": 60}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH008",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 4"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S002"},
+    "capacity": {"type": "Number", "value": 60}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH009",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 1"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S003"},
+    "capacity": {"type": "Number", "value": 55}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH010",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 2"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S003"},
+    "capacity": {"type": "Number", "value": 55}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH011",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 3"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S003"},
+    "capacity": {"type": "Number", "value": 55}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH012",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 4"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S003"},
+    "capacity": {"type": "Number", "value": 55}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH013",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 1"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S004"},
+    "capacity": {"type": "Number", "value": 52}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH014",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 2"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S004"},
+    "capacity": {"type": "Number", "value": 52}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH015",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 3"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S004"},
+    "capacity": {"type": "Number", "value": 52}
+  },
+  {
+    "id": "urn:ngsi-ld:Shelf:SH016",
+    "type": "Shelf",
+    "location": {"type": "Text", "value": "Aisle 4"},
+    "refStore": {"type": "Relationship", "value": "urn:ngsi-ld:Store:S004"},
+    "capacity": {"type": "Number", "value": 52}
+  }
+]
