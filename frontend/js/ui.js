@@ -5,6 +5,22 @@
 
 const UI = {
   /**
+   * Extract value from NGSI-LD format
+   * @param {*} field - Field that might be NGSI-LD format or plain value
+   * @returns {*} Extracted value
+   */
+  extractValue(field) {
+    if (field === null || field === undefined) return '';
+    if (typeof field === 'string' || typeof field === 'number' || typeof field === 'boolean') {
+      return field;
+    }
+    if (field.value !== undefined) {
+      return field.value;
+    }
+    return field;
+  },
+
+  /**
    * Show loading state
    * @param {string} elementId - Element to show loader
    */
@@ -80,10 +96,10 @@ const UI = {
    */
   createProductCard(product) {
     const id = product.id || '';
-    const name = product.name || 'Producto Sin Nombre';
-    const price = product.price || 0;
-    const description = product.description || '';
-    const imageUrl = product.image || 'https://via.placeholder.com/200';
+    const name = this.extractValue(product.name) || 'Producto Sin Nombre';
+    const price = this.extractValue(product.price) || 0;
+    const description = this.extractValue(product.description) || '';
+    const imageUrl = this.extractValue(product.image) || 'https://via.placeholder.com/200';
 
     return `
       <div class="product-card" data-product-id="${id}">
@@ -94,7 +110,7 @@ const UI = {
           <h3 class="product-name">${this.escapeHtml(name)}</h3>
           <p class="product-description">${this.escapeHtml(description)}</p>
           <div class="product-footer">
-            <span class="price">€${price.toFixed(2)}</span>
+            <span class="price">€${parseFloat(price).toFixed(2)}</span>
             <button class="btn-details" data-product-id="${id}">Ver Detalles</button>
           </div>
         </div>
@@ -125,11 +141,11 @@ const UI = {
    */
   createInventoryRow(item) {
     const id = item.id || '';
-    const productName = item.productName || 'Desconocido';
-    const storeName = item.storeName || 'Desconocida';
-    const quantity = item.quantity || 0;
-    const shelf = item.shelf || 'N/A';
-    const isLowStock = quantity < CONFIG.UI.LOW_STOCK_THRESHOLD;
+    const productName = this.extractValue(item.productName) || 'Desconocido';
+    const storeName = this.extractValue(item.storeName) || 'Desconocida';
+    const quantity = this.extractValue(item.quantity) || 0;
+    const shelf = this.extractValue(item.shelf) || 'N/A';
+    const isLowStock = parseInt(quantity) < CONFIG.UI.LOW_STOCK_THRESHOLD;
     const statusClass = isLowStock ? 'low-stock' : 'normal-stock';
     const statusText = isLowStock ? '⚠️ Stock Bajo' : '✅ Normal';
 
@@ -162,9 +178,11 @@ const UI = {
     // Update store filter
     const storeFilter = document.getElementById('filter-store');
     if (storeFilter && stores && stores.length > 0) {
-      const options = stores.map(store => 
-        `<option value="${store.id}">${this.escapeHtml(store.name)}</option>`
-      ).join('');
+      const options = stores.map(store => {
+        const storeId = store.id || '';
+        const storeName = this.extractValue(store.name) || 'Tienda Sin Nombre';
+        return `<option value="${storeId}">${this.escapeHtml(storeName)}</option>`;
+      }).join('');
       storeFilter.innerHTML = '<option value="">Todas las tiendas</option>' + options;
     }
 
@@ -183,12 +201,12 @@ const UI = {
    */
   createStoreCard(store) {
     const id = store.id || '';
-    const name = store.name || 'Tienda Sin Nombre';
-    const address = store.address || '';
-    const city = store.city || '';
-    const country = store.country || '';
-    const phone = store.phone || '';
-    const email = store.email || '';
+    const name = this.extractValue(store.name) || 'Tienda Sin Nombre';
+    const address = this.extractValue(store.address) || '';
+    const city = this.extractValue(store.city) || '';
+    const country = this.extractValue(store.country) || '';
+    const phone = this.extractValue(store.phone) || '';
+    const email = this.extractValue(store.email) || '';
 
     return `
       <div class="store-card" data-store-id="${id}">
@@ -224,9 +242,9 @@ const UI = {
    */
   createEmployeeCard(employee) {
     const id = employee.id || '';
-    const name = employee.name || 'Empleado Sin Nombre';
-    const email = employee.email || '';
-    const role = employee.role || 'N/A';
+    const name = this.extractValue(employee.name) || 'Empleado Sin Nombre';
+    const email = this.extractValue(employee.email) || '';
+    const role = this.extractValue(employee.role) || 'N/A';
 
     return `
       <div class="employee-card" data-employee-id="${id}">

@@ -108,7 +108,7 @@ const App = {
       );
 
       if (response.success && response.data) {
-        this.products = response.data.items || [];
+        this.products = response.data.products || response.data.items || [];
         UI.renderProducts(this.products, response.data);
       } else {
         UI.showError('stores-list', 'No se pudieron cargar los productos');
@@ -143,7 +143,7 @@ const App = {
       );
 
       if (response.success && response.data) {
-        this.inventory = response.data.items || [];
+        this.inventory = response.data.inventory || response.data.items || [];
         UI.renderInventory(this.inventory);
       } else {
         UI.showError('inventory-table', 'No se pudo cargar el inventario');
@@ -167,7 +167,7 @@ const App = {
       const response = await API.getStores(this.currentPage, CONFIG.UI.ITEMS_PER_PAGE);
 
       if (response.success && response.data) {
-        this.stores = response.data.items || [];
+        this.stores = response.data.stores || response.data.items || [];
         UI.renderStores(this.stores);
       } else {
         UI.showError('stores-list', 'No se pudieron cargar las tiendas');
@@ -188,7 +188,7 @@ const App = {
       const response = await API.getEmployees(this.currentPage, CONFIG.UI.ITEMS_PER_PAGE);
 
       if (response.success && response.data) {
-        this.employees = response.data.items || [];
+        this.employees = response.data.employees || response.data.items || [];
         UI.renderEmployees(this.employees);
       } else {
         UI.showError('employees-list', 'No se pudieron cargar los empleados');
