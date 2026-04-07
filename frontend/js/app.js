@@ -46,17 +46,21 @@ const App = {
     try {
       UI.showLoading('');
       
-      // Fetch counts for statistics
-      const productsRes = await API.getProducts(1, 1);
-      const storesRes = await API.getStores(1, 1);
-      const inventoryRes = await API.getInventory(1, 1);
-      const employeesRes = await API.getEmployees(1, 1);
+      // Fetch counts for statistics with timeout
+      const timeout = 5000; // 5 seconds
+      
+      const results = await Promise.allSettled([
+        this.withTimeout(API.getProducts(1, 1), timeout),
+        this.withTimeout(API.getStores(1, 1), timeout),
+        this.withTimeout(API.getInventory(1, 1), timeout),
+        this.withTimeout(API.getEmployees(1, 1), timeout)
+      ]);
 
       const stats = {
-        productCount: productsRes.data?.total || 0,
-        storeCount: storesRes.data?.total || 0,
-        inventoryCount: inventoryRes.data?.total || 0,
-        employeeCount: employeesRes.data?.total || 0
+        productCount: results[0].status === 'fulfilled' ? results[0].value?.data?.total || 0 : 0,
+        storeCount: results[1].status === 'fulfilled' ? results[1].value?.data?.total || 0 : 0,
+        inventoryCount: results[2].status === 'fulfilled' ? results[2].value?.data?.total || 0 : 0,
+        employeeCount: results[3].status === 'fulfilled' ? results[3].value?.data?.total || 0 : 0
       };
 
       UI.updateStats(stats);
@@ -64,6 +68,18 @@ const App = {
       console.error('Dashboard load error:', error);
       UI.showError('dashboard', 'Error al cargar el dashboard');
     }
+  },
+
+  /**
+   * Execute promise with timeout
+   */
+  withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), ms)
+      )
+    ]);
   },
 
   /**
