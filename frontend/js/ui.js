@@ -99,12 +99,15 @@ const UI = {
     const name = this.extractValue(product.name) || 'Producto Sin Nombre';
     const price = this.extractValue(product.price) || 0;
     const description = this.extractValue(product.description) || '';
-    const imageUrl = this.extractValue(product.image) || 'https://via.placeholder.com/200';
+    const imageUrl = this.extractValue(product.image) || '';
+
+    // Create a simple SVG placeholder if no image
+    const placeholderSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Ctext x='100' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14' fill='%23999'%3EProducto%3C/text%3E%3C/svg%3E`;
 
     return `
       <div class="product-card" data-product-id="${id}">
         <div class="product-image">
-          <img src="${imageUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/200'">
+          <img src="${imageUrl || placeholderSvg}" alt="${name}" onerror="this.src='${placeholderSvg}'">
         </div>
         <div class="product-info">
           <h3 class="product-name">${this.escapeHtml(name)}</h3>
