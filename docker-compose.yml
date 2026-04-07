@@ -60,6 +60,7 @@ services:
       ORION_URL: http://orion:1026
       MONGODB_URL: mongodb://${MONGO_ROOT_USER:-root}:${MONGO_ROOT_PASSWORD:-root}@mongodb:27017/
       MONGO_DB: ${MONGO_DB:-fiware_smartstore}
+      CORS_ORIGINS: http://localhost:8081,http://frontend
     volumes:
       - ./backend:/app
       - /app/__pycache__
@@ -76,7 +77,7 @@ services:
     image: nginx:alpine
     container_name: fiware-frontend
     ports:
-      - "${FRONTEND_PORT:-8081}:80"
+      - "8081:80"
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/nginx.conf:ro

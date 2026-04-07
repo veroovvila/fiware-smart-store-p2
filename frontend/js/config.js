@@ -4,9 +4,9 @@
  */
 
 const CONFIG = {
-  // Backend API Configuration
+  // Backend API Configuration - Use relative paths so Nginx proxy handles routing
   API: {
-    BASE_URL: 'http://localhost:5000',
+    BASE_URL: window.location.origin,  // Will be http://localhost:8081 when deployed
     VERSION: 'v1',
     ENDPOINTS: {
       PRODUCTS: '/api/v1/products',
@@ -16,9 +16,9 @@ const CONFIG = {
     }
   },
 
-  // Socket.IO Configuration
+  // Socket.IO Configuration - Use relative URL
   SOCKET: {
-    URL: 'http://localhost:5000',
+    URL: window.location.origin,  // Will connect through Nginx proxy
     RECONNECT_DELAY: 3000,
     EVENTS: {
       PRICE_CHANGE: 'price_change',
